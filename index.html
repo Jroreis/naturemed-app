@@ -221,22 +221,23 @@
             height: 220px;
             position: relative;
             overflow: hidden;
-            cursor: pointer; /* Indica que é clicável */
+            cursor: pointer;
+            background-color: var(--primary-dark); /* Fundo caso imagem demore */
         }
 
-        /* Sobreposição de instrução na foto */
         .card-img-container::after {
-            content: "Ver detalhes";
+            content: "Abrir Ficha Completa";
             position: absolute;
             bottom: 0; left: 0; width: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
             color: white;
             text-align: center;
-            padding: 8px 0;
-            font-size: 0.9rem;
+            padding: 10px 0;
+            font-size: 0.95rem;
             font-weight: 600;
             opacity: 0;
             transition: var(--transition);
+            backdrop-filter: blur(2px);
         }
 
         .card-img-container:hover::after {
@@ -297,11 +298,11 @@
 
         /* MODAL (Aba de Detalhes) */
         .modal {
-            display: none; /* Escondido por padrão */
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -317,14 +318,14 @@
         .modal-content {
             background: var(--card-bg);
             border-radius: 20px;
-            width: 90%;
-            max-width: 650px;
+            width: 95%;
+            max-width: 800px; /* Alargado para caber o vídeo melhor */
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
             transform: scale(0.9);
             transition: transform 0.3s ease;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .modal.show .modal-content {
@@ -341,27 +342,61 @@
             width: 40px; height: 40px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             transition: all 0.2s;
             z-index: 10;
         }
 
-        .close-modal:hover { background: #f1f5f9; color: #dc2626; }
+        .close-modal:hover { background: #fef2f2; color: #dc2626; transform: scale(1.1); }
 
         .modal-header-img {
-            width: 100%; height: 250px; object-fit: cover;
+            width: 100%; height: 300px; object-fit: cover;
         }
 
-        .modal-body-content { padding: 30px; }
+        .modal-body-content { padding: 35px; }
+
+        /* Nova Caixa de Descrição Robusta */
+        .modal-description {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            line-height: 1.7;
+            margin-bottom: 25px;
+            background: #f8fafc;
+            padding: 20px 25px;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-light);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Container do Vídeo do YouTube */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* Proporção 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
         .modal-info-section { margin-bottom: 20px; }
         .modal-info-title {
             font-weight: 700;
-            color: var(--primary-light);
-            font-size: 1.1rem;
+            color: var(--primary-dark);
+            font-size: 1.15rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 8px;
             border-bottom: 2px solid var(--accent);
             padding-bottom: 5px;
@@ -422,17 +457,6 @@
             visibility: visible;
         }
 
-        .no-results {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            grid-column: 1 / -1;
-            background: white;
-            border-radius: 20px;
-            border: 1px dashed #cbd5e1;
-        }
-
         footer {
             background: var(--card-bg);
             color: var(--text-muted);
@@ -447,9 +471,10 @@
             .hero-title { font-size: 2rem; }
             .header-content { flex-direction: column; gap: 15px; }
             .search-container { flex-direction: column; border-radius: 20px; padding: 15px; }
-            .search-input { padding: 10px; }
-            .search-btn { width: 100%; border-radius: 10px; }
-            .modal-content { width: 95%; }
+            .modal-content { width: 95%; margin: 10px; }
+            .modal-header-img { height: 200px; }
+            .modal-body-content { padding: 20px; }
+            .medical-alert { flex-direction: column; }
         }
     </style>
 </head>
@@ -493,7 +518,7 @@
         </div>
     </main>
 
-    <!-- Modal (Aba de Detalhes) -->
+    <!-- Modal (Aba de Detalhes com Vídeo) -->
     <div id="plantModal" class="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -510,28 +535,29 @@
     </footer>
 
     <script>
-        // Banco de dados com URLs de imagens robustas e altamente confiáveis
+        // Banco de dados ultra-robusto com descrições fitoterápicas e buscas dinâmicas de vídeo.
+        // O link de imagem usa um banco dinâmico (loremflickr) mas tem uma trava de segurança em código no HTML caso falhe.
         const plantsData = [
-            { id: 1, name: "Hortelã", img: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Alívio de náuseas, má digestão e gases.", prep: "Infusão: 1 colher de folhas para 1 xícara de água quente. Abafe por 5 min.", contra: "Pessoas com refluxo grave ou pedras na vesícula." },
-            { id: 2, name: "Camomila", img: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Ajuda no sono, reduz ansiedade e cólicas.", prep: "Infusão das flores secas. 1 colher de sopa por xícara.", contra: "Alérgicos a plantas da família Asteraceae." },
-            { id: 3, name: "Erva-cidreira", img: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Calmante leve, melhora a qualidade do sono e alivia gases.", prep: "Infusão das folhas. Tomar 30 min antes de dormir.", contra: "Pessoas com hipotireoidismo (uso excessivo)." },
-            { id: 4, name: "Gengibre", img: "https://images.unsplash.com/photo-1596368708356-6e1efb2401c8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Anti-inflamatório, fortalece imunidade, alivia enjoos.", prep: "Decocção: ferver 1 rodela fina em 1 xícara de água por 10 min.", contra: "Pessoas com hipertensão descontrolada ou que usam anticoagulantes." },
-            { id: 5, name: "Alho", img: "https://images.unsplash.com/photo-1540148426946-88d0111568e6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Antibiótico natural, reduz pressão arterial e colesterol.", prep: "Consumir cru, amassado (água de alho) ou em xaropes.", contra: "Antes de cirurgias (risco de sangramento) e gastrite severa." },
-            { id: 6, name: "Equinácea", img: "https://images.unsplash.com/photo-1601614457814-25624707dc87?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Prevenção e tratamento de gripes e resfriados.", prep: "Chá das raízes/folhas ou uso em tintura.", contra: "Doenças autoimunes ou esclerose múltipla." },
-            { id: 7, name: "Boldo", img: "https://images.unsplash.com/photo-1628157732272-2c8c7c8ec1eb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Protetor hepático, alivia azia e ressaca.", prep: "Maceração a frio ou infusão das folhas.", contra: "Gestantes, lactantes e pessoas com vias biliares obstruídas." },
-            { id: 8, name: "Alecrim", img: "https://images.unsplash.com/photo-1596366629910-39fb74291079?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Estimulante", benefits: "Melhora foco, memória e alivia cansaço mental.", prep: "Infusão de 1 ramo pequeno por xícara.", contra: "Uso noturno (pode causar insônia), hipertensos (uso excessivo)." },
-            { id: 9, name: "Lavanda", img: "https://images.unsplash.com/photo-1595806450143-6c703d8d6411?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Alivia dores de cabeça, estresse e insônia.", prep: "Chá das flores ou uso de óleo essencial (aromaterapia).", contra: "Gestantes no primeiro trimestre." },
-            { id: 10, name: "Arnica", img: "https://images.unsplash.com/photo-1554522914-722c1ec3655b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Reduz hematomas, dores musculares e contusões.", prep: "Uso externo: pomadas, géis ou compressas.", contra: "Nunca ingerir (tóxica). Não aplicar em feridas abertas." },
-            { id: 11, name: "Babosa (Aloe Vera)", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Cicatrização, queimaduras e hidratação de pele/cabelo.", prep: "Extrair o gel transparente da folha e aplicar na pele.", contra: "Uso interno não recomendado sem orientação. Alergia tópica." },
-            { id: 12, name: "Calêndula", img: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Anti-inflamatório para pele, trata acne e assaduras.", prep: "Compressas com o chá das flores ou uso em pomadas.", contra: "Alérgicos a plantas da família Asteraceae." },
-            { id: 13, name: "Guaraná", img: "https://images.unsplash.com/photo-1587314418659-40eb25c2759e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Estimulante", benefits: "Aumenta energia, disposição e reduz fadiga.", prep: "Pó dissolvido em água ou sucos pela manhã.", contra: "Insônia, ansiedade, arritmias cardíacas." },
-            { id: 14, name: "Erva-doce", img: "https://images.unsplash.com/photo-1606277983173-9ea75bb423e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Alivia cólicas infantis e intestinais, reduz inchaço.", prep: "Infusão das sementes (1 colher de chá por xícara).", contra: "Gestantes em altas doses." },
-            { id: 15, name: "Eucalipto", img: "https://images.unsplash.com/photo-1620050865518-d014d872120e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Expectorante, descongestionante nasal.", prep: "Inalação do vapor com folhas em água quente.", contra: "Asmáticos crônicos (pode desencadear crise), crianças pequenas." },
-            { id: 16, name: "Guaco", img: "https://images.unsplash.com/photo-1595181792671-55ecbbec0e97?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Alivia tosse persistente e bronquite (broncodilatador).", prep: "Xarope ou infusão das folhas.", contra: "Pessoas que usam anticoagulantes." },
-            { id: 17, name: "Macela", img: "https://images.unsplash.com/photo-1616853239401-0814daee83fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Má digestão, diarreia e propriedades calmantes.", prep: "Infusão das flores secas.", contra: "Não há contraindicações graves conhecidas nas doses normais." },
-            { id: 18, name: "Sálvia", img: "https://images.unsplash.com/photo-1603504388137-b4d0e14a1a6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Alivia dor de garganta, aftas e problemas gengivais.", prep: "Gargarejo com o chá forte das folhas.", contra: "Gestantes e lactantes (pode secar o leite)." },
-            { id: 19, name: "Quebra-pedra", img: "https://images.unsplash.com/photo-1579970977232-a5e22ea25df6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Sistema Urinário", benefits: "Auxilia na eliminação de cálculos renais e infecção urinária.", prep: "Decocção da planta inteira por 5 a 10 minutos.", contra: "Gestantes e uso prolongado (mais de 3 semanas seguidas)." },
-            { id: 20, name: "Valeriana", img: "https://images.unsplash.com/photo-1595420364998-1da5faae6ce5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Trata insônia profunda e crises de ansiedade.", prep: "Chá da raiz ou em cápsulas (tomar 1h antes de dormir).", contra: "Crianças menores de 3 anos, uso associado a álcool." }
+            { id: 1, name: "Hortelã", img: "https://loremflickr.com/800/600/herb,leaf?lock=10", category: "Digestivo", benefits: "Alívio de náuseas, má digestão e gases.", description: "A Hortelã (Mentha piperita) é amplamente reconhecida na fitoterapia mundial por sua poderosa ação antiespasmódica. O mentol, seu principal composto ativo, atua relaxando a musculatura lisa do trato gastrointestinal, facilitando a digestão e aliviando cólicas de forma quase imediata. Além disso, possui um aroma revigorante que ajuda a reduzir a fadiga mental e desobstruir vias aéreas leves.", prep: "Infusão: 1 colher de folhas para 1 xícara de água quente. Abafe por 5 a 10 min para não perder os óleos essenciais.", contra: "Pessoas com refluxo gastroesofágico grave ou cálculos biliares severos.", videoQuery: "como+fazer+cha+de+hortela+tutorial" },
+            { id: 2, name: "Camomila", img: "https://loremflickr.com/800/600/herb,leaf?lock=20", category: "Relaxante", benefits: "Ajuda no sono, reduz ansiedade e cólicas.", description: "A Camomila (Matricaria recutita) é uma das ervas mais gentis e eficazes do mundo. Rica no flavonoide apigenina, ela se liga a receptores específicos no cérebro promovendo forte efeito calmante, induzindo o sono e reduzindo a ansiedade. Também atua localmente no estômago reduzindo espasmos que causam cólicas.", prep: "Infusão das flores secas. 1 colher de sopa para cada xícara de água recém fervida. Abafe por 5 minutos.", contra: "Pessoas com histórico de alergia severa a plantas da família Asteraceae (como margaridas e girassóis).", videoQuery: "como+fazer+cha+de+camomila+tutorial" },
+            { id: 3, name: "Erva-cidreira", img: "https://loremflickr.com/800/600/herb,leaf?lock=30", category: "Relaxante", benefits: "Calmante leve, melhora a qualidade do sono e alivia gases.", description: "A Erva-cidreira (Melissa officinalis) também conhecida como Melissa, é rica em ácido rosmarínico. A ciência moderna comprova que ela aumenta os níveis de GABA no cérebro, um neurotransmissor que desacelera a atividade mental, proporcionando relaxamento profundo, alívio de estresse crônico e melhora em quadros de insônia.", prep: "Infusão das folhas frescas ou secas. Tomar cerca de 30 a 40 minutos antes de deitar.", contra: "Pessoas com hipotireoidismo devem evitar o uso excessivo diário e contínuo.", videoQuery: "como+fazer+cha+de+erva+cidreira+melissa" },
+            { id: 4, name: "Gengibre", img: "https://loremflickr.com/800/600/herb,leaf?lock=40", category: "Imunidade", benefits: "Anti-inflamatório, fortalece imunidade, alivia enjoos.", description: "O Gengibre (Zingiber officinale) é uma raiz com altíssimo poder terapêutico. Graças aos 'gingeróis' presentes em sua composição, atua como um potente anti-inflamatório e antioxidante sistêmico. É o principal remédio natural comprovado clinicamente para combater náuseas (incluindo enjoos de movimento e de gestação) e é excelente para aquecer o corpo e acelerar a recuperação de resfriados.", prep: "Decocção: ferver 1 a 2 rodelas finas da raiz fresca em 1 xícara de água por cerca de 10 minutos. Coe e beba.", contra: "Hipertensos descontrolados, pessoas com distúrbios hemorrágicos ou que tomam medicamentos anticoagulantes.", videoQuery: "como+fazer+cha+de+gengibre+correto" },
+            { id: 5, name: "Alho", img: "https://loremflickr.com/800/600/herb,leaf?lock=50", category: "Imunidade", benefits: "Antibiótico natural, reduz pressão arterial e colesterol.", description: "O Alho (Allium sativum) transcende a culinária sendo um autêntico antibiótico natural. Quando esmagado, libera a Alicina, um composto sulfúrico responsável pelo seu cheiro forte e por exterminar diversas bactérias, vírus e fungos do organismo. Seu consumo regular auxilia a dilatar os vasos sanguíneos e a controlar o colesterol ruim (LDL).", prep: "Deve ser amassado ou picado e deixado descansar por 10 minutos antes do consumo cru, em águas saborizadas ou xaropes.", contra: "Recomenda-se suspender o uso antes de cirurgias devido ao leve risco de sangramento prolongado. Pode irritar gastrites severas.", videoQuery: "como+fazer+cha+de+alho+para+gripe" },
+            { id: 6, name: "Equinácea", img: "https://loremflickr.com/800/600/herb,leaf?lock=60", category: "Imunidade", benefits: "Prevenção e tratamento de gripes e resfriados.", description: "A Equinácea (Echinacea purpurea) é uma planta amplamente estudada por sua capacidade impressionante de aumentar a contagem de glóbulos brancos e estimular as defesas naturais do corpo. Ela não apenas previne infecções respiratórias, mas quando consumida aos primeiros sinais de gripe, pode reduzir a duração da doença de forma significativa.", prep: "Geralmente consumida como chá das raízes ou tintura em gotas diluídas em água. Para infusão: 1 colher de chá para 1 xícara.", contra: "Contraindicada para pacientes com doenças autoimunes, esclerose múltipla ou HIV, pois estimula excessivamente a imunidade.", videoQuery: "como+fazer+cha+de+equinacea" },
+            { id: 7, name: "Boldo", img: "https://loremflickr.com/800/600/herb,leaf?lock=70", category: "Digestivo", benefits: "Protetor hepático, alivia azia e ressaca.", description: "O Boldo (Peumus boldus ou Boldo do Chile) é o melhor amigo do fígado. Seu alcaloide ativo, a boldina, estimula a produção e a secreção de bile pela vesícula biliar, sendo o remédio perfeito para recuperar o sistema digestivo após excessos alimentares ou alcoólicos. Protege as células hepáticas contra toxinas.", prep: "Maceração a frio (amassar folhas frescas em água filtrada) ou infusão rápida das folhas secas (abafe por apenas 3 minutos para não amargar excessivamente).", contra: "Totalmente contraindicado para gestantes (risco abortivo) e pessoas com vias biliares obstruídas.", videoQuery: "como+fazer+cha+de+boldo+correto" },
+            { id: 8, name: "Alecrim", img: "https://loremflickr.com/800/600/herb,leaf?lock=80", category: "Estimulante", benefits: "Melhora foco, memória e alivia cansaço mental.", description: "O Alecrim (Rosmarinus officinalis) é conhecido desde a Grécia Antiga como a 'erva da lembrança'. Hoje a ciência sabe que compostos como o ácido carnósico ajudam a proteger o cérebro do envelhecimento e melhoram a circulação sanguínea na região da cabeça, aumentando o foco, a atenção e afastando o cansaço mental e dores de cabeça tensionais.", prep: "Infusão de 1 raminho pequeno fresco ou 1 colher de chá das folhas secas por xícara. Ideal para beber pela manhã ou no meio da tarde.", contra: "Deve ser evitado no período noturno pois pode causar insônia. Hipertensos graves devem usar com moderação.", videoQuery: "como+fazer+cha+de+alecrim" },
+            { id: 9, name: "Lavanda", img: "https://loremflickr.com/800/600/herb,leaf?lock=90", category: "Relaxante", benefits: "Alivia dores de cabeça, estresse e insônia.", description: "A Lavanda (Lavandula angustifolia) possui um óleo essencial rico em Linalol, absorvido tanto pela via respiratória quanto pela digestiva. Age inibindo a agitação do sistema nervoso simpático, baixando a frequência cardíaca e relaxando músculos tensos. O chá tem um leve sabor floral adocicado.", prep: "Chá de 1 colher de chá rasa das flores secas (uso culinário). Não exagere para não ficar com gosto de sabonete.", contra: "Gestantes no primeiro trimestre. Pessoas com sensibilidade alérgica a flores fortes.", videoQuery: "como+fazer+cha+de+lavanda+flores" },
+            { id: 10, name: "Arnica", img: "https://loremflickr.com/800/600/herb,leaf?lock=100", category: "Pele/Uso Externo", benefits: "Reduz hematomas, dores musculares e contusões.", description: "A Arnica (Arnica montana) é um verdadeiro milagre da natureza para o tratamento tópico de traumas físicos. Possui lactonas sesquiterpênicas que reduzem drasticamente a inflamação de tecidos musculares rompidos e aceleram a reabsorção de sangue pisado (hematomas) pelas células.", prep: "USO ESTRITAMENTE EXTERNO. Faça compressas embebendo gazes em um chá bem forte e aplique sobre a pancada, ou use na forma de pomadas.", contra: "É hepatotóxica se ingerida (NUNCA BEBA O CHÁ). Não aplicar sobre cortes abertos ou pele esfolada.", videoQuery: "como+fazer+compressa+de+arnica" },
+            { id: 11, name: "Babosa (Aloe Vera)", img: "https://loremflickr.com/800/600/herb,leaf?lock=110", category: "Pele/Uso Externo", benefits: "Cicatrização, queimaduras e hidratação.", description: "A Babosa (Aloe barbadensis) guarda um gel transparente em suas folhas suculentas incrivelmente rico em polissacarídeos, vitaminas e minerais. É inigualável no poder de regeneração celular da pele, aliviando quase imediatamente a dor e o ardor de queimaduras solares ou térmicas leves, além de ser excelente para fortalecer o couro cabeludo.", prep: "Corte a folha, deixe escorrer a resina amarela (aloína, que é irritante) por 1 hora, retire a casca verde e use apenas o cristal (gel) transparente diretamente na pele.", contra: "Pessoas com alergia tópica. Uso interno em formato de suco não é recomendado sem produto limpo laboratorialmente.", videoQuery: "como+extrair+gel+da+babosa" },
+            { id: 12, name: "Calêndula", img: "https://loremflickr.com/800/600/herb,leaf?lock=120", category: "Pele/Uso Externo", benefits: "Anti-inflamatório para pele, trata acne e assaduras.", description: "As pétalas cor-de-laranja da Calêndula (Calendula officinalis) contêm altos níveis de flavonoides e carotenoides. É uma planta vulnerária maravilhosa, o que significa que estimula ativamente o fechamento e a cicatrização de feridas, sendo indicada para peles delicadas de bebês (assaduras), acnes inflamadas, dermatites e alergias.", prep: "Faça uma infusão (chá) concentrada com 2 colheres de sopa das flores. Espere esfriar, umedeça algodões e aplique na pele limpa.", contra: "Alérgicos a plantas da família das Asteráceas.", videoQuery: "como+fazer+cha+de+calendula+para+pele" },
+            { id: 13, name: "Guaraná", img: "https://loremflickr.com/800/600/herb,leaf?lock=130", category: "Estimulante", benefits: "Aumenta energia, disposição e reduz fadiga.", description: "O Guaraná (Paullinia cupana) é um tesouro da floresta Amazônica. Suas sementes possuem mais cafeína que os próprios grãos de café, mas seu diferencial é a presença de taninos e saponinas que fazem com que essa cafeína seja liberada de forma lenta e sustentável no corpo, proporcionando horas de energia sem o 'pico' e a posterior 'queda' brusca causada pelo café.", prep: "1 colher de café (pequena) do pó de guaraná puro diluída na água, suco ou vitamina, logo pela manhã.", contra: "Insônia severa, síndrome do pânico, ansiedade generalizada e pessoas com arritmias cardíacas.", videoQuery: "como+tomar+guarana+em+po" },
+            { id: 14, name: "Erva-doce", img: "https://loremflickr.com/800/600/herb,leaf?lock=140", category: "Digestivo", benefits: "Alivia cólicas infantis e intestinais, reduz inchaço.", description: "A Erva-doce (Pimpinella anisum) tem ação carminativa profunda. Isso significa que ela atua nas paredes do intestino impedindo a fermentação que gera gases e facilitando a eliminação do que já foi formado. É tão gentil e eficaz que a ciência endossa seu uso (através do leite materno quando a mãe bebe o chá) para aliviar as temidas cólicas de recém-nascidos.", prep: "Infusão das sementes secas. Esmague as sementes levemente antes de jogar a água quente para liberar mais sabor.", contra: "Gestantes não devem consumir chás concentrados diários sem supervisão.", videoQuery: "como+fazer+cha+de+erva+doce+semente" },
+            { id: 15, name: "Eucalipto", img: "https://loremflickr.com/800/600/herb,leaf?lock=150", category: "Respiratório", benefits: "Expectorante, descongestionante nasal.", description: "O Eucalipto (Eucalyptus globulus) é a principal referência na fitoterapia respiratória mundial. O eucaliptol evapora rapidamente em água quente e, quando inalado, chega diretamente aos alvéolos pulmonares. Ele fluidifica (amolece) o catarro denso e dilata as vias respiratórias, facilitando a respiração em casos de sinusite, bronquite e resfriados pesados.", prep: "Inalação (Vaporização): Ferva 1 litro de água, coloque um punhado de folhas de eucalipto. Retire do fogo e respire o vapor profundamente (cuidado para não se queimar).", contra: "Asmáticos crônicos (o odor forte pode, paradoxalmente, desencadear crises de broncoespasmo em pacientes sensíveis).", videoQuery: "como+fazer+inalacao+com+eucalipto" },
+            { id: 16, name: "Guaco", img: "https://loremflickr.com/800/600/herb,leaf?lock=160", category: "Respiratório", benefits: "Alivia tosse persistente e bronquite.", description: "O Guaco (Mikania glomerata) é uma planta nativa do Brasil altamente recomendada pelo Ministério da Saúde. É rica em cumarinas, substâncias que têm forte efeito broncodilatador e expectorante. O xarope ou chá de guaco abre os brônquios e acalma as irritações da garganta que provocam aquela tosse seca, alérgica e persistente.", prep: "Pode ser feito em infusão para chá ou preparado como xarope artesanal com açúcar queimado (caramelo) e água.", contra: "Como as cumarinas interferem na coagulação do sangue, não deve ser usado por quem toma medicamentos anticoagulantes.", videoQuery: "como+fazer+xarope+ou+cha+de+guaco" },
+            { id: 17, name: "Macela", img: "https://loremflickr.com/800/600/herb,leaf?lock=170", category: "Digestivo", benefits: "Má digestão, diarreia e propriedades calmantes.", description: "A Macela ou Marcela (Achyrocline satureioides) é carinhosamente chamada de florzinha amarela ou 'ouro das pastagens'. Possui propriedades anti-inflamatórias impressionantes para a mucosa gástrica e intestinal, sendo o remédio perfeito para tratar diarreias infecciosas leves, dores de estômago e sensação de estômago 'pesado'. Também relaxa o corpo como um todo.", prep: "Infusão das flores secas. Cerca de 1 colher de sopa para cada xícara.", contra: "Por ser extremamente segura, não há contraindicações graves documentadas nas doses habituais (1 a 3 xícaras diárias).", videoQuery: "como+fazer+cha+de+macela" },
+            { id: 18, name: "Sálvia", img: "https://loremflickr.com/800/600/herb,leaf?lock=180", category: "Respiratório", benefits: "Alivia dor de garganta, aftas e problemas gengivais.", description: "O próprio nome da Sálvia (Salvia officinalis) deriva da palavra em latim 'salvare' (salvar). Tem um poder antibacteriano e adstringente brutal, o que faz dela o melhor enxaguante natural do mundo para combater amigdalites (dores de garganta purulentas), gengivas sangrando e aftas doloridas que não curam.", prep: "Gargarejo: Faça um chá bem forte. Espere amornar para não queimar a boca, e faça gargarejos e bochechos longos.", contra: "Mulheres que estão amamentando (pois o uso contínuo da planta é conhecido tradicionalmente por reduzir a produção de leite).", videoQuery: "como+fazer+gargarejo+cha+de+salvia" },
+            { id: 19, name: "Quebra-pedra", img: "https://loremflickr.com/800/600/herb,leaf?lock=190", category: "Sistema Urinário", benefits: "Auxilia na eliminação de cálculos renais e infecção urinária.", description: "A Quebra-pedra (Phyllanthus niruri) atua diretamente no sistema urinário de uma maneira quase mágica: ela afrouxa a musculatura do trato urinário e altera a estrutura química da urina, impedindo que cristais de cálcio se agrupem. Com isso, as pedrinhas nos rins param de crescer e são expulsas de forma mais suave, aliviando a cólica renal.", prep: "Ao contrário das folhas moles, é preciso fazer a DECOCÇÃO (ferver a planta junto com a água) por pelo menos 10 minutos para extrair o princípio ativo.", contra: "Não usar de forma ininterrupta por mais de 3 semanas (pode eliminar minerais em excesso do corpo). Gestantes.", videoQuery: "como+fazer+cha+de+quebra+pedra" },
+            { id: 20, name: "Valeriana", img: "https://loremflickr.com/800/600/herb,leaf?lock=200", category: "Relaxante", benefits: "Trata insônia profunda e crises de ansiedade.", description: "As raízes de Valeriana (Valeriana officinalis) emanam um cheiro forte, mas escondem o ácido valerênico, um fitocomplexo que tem eficácia comprovada no tratamento da insônia aguda. Ela atua nos mesmos receptores cerebrais que medicamentos alopáticos sedativos, mas de forma natural, sem causar dependência ou aquela sensação de 'ressaca' pela manhã.", prep: "Chá (decocção das raízes por 5 min) ou ingestão de cápsulas manipuladas. Tomar 1 hora antes de dormir. O sabor do chá não é dos melhores, adoçar com mel ajuda.", contra: "Nunca deve ser misturada com consumo de álcool ou com medicamentos psiquiátricos tranquilizantes sem laudo médico.", videoQuery: "como+fazer+cha+raiz+de+valeriana" }
         ];
 
         let currentCategory = 'Todos';
@@ -563,12 +589,15 @@
                 const isFav = favorites.includes(plant.id);
                 const favClass = isFav ? 'fas active' : 'far';
                 
+                // SISTEMA ANTI-FALHA DE IMAGEM: 
+                // Se a imagem falhar ao carregar, 'onerror' entra em ação criando uma capa linda gerada no próprio navegador usando a API placehold.co
+                const fallbackImage = `https://placehold.co/800x600/1b4332/d8f3dc?text=${encodeURIComponent(plant.name)}&font=montserrat`;
+                
                 const card = document.createElement('div');
                 card.className = 'plant-card';
-                // Adiciona o evento de clique em todo o card para abrir o modal
                 card.innerHTML = `
                     <div class="card-img-container" onclick="openModal(${plant.id})">
-                        <img src="${plant.img}" alt="${plant.name}" class="card-img" loading="lazy">
+                        <img src="${plant.img}" alt="${plant.name}" class="card-img" loading="lazy" onerror="this.onerror=null; this.src='${fallbackImage}';">
                         <div class="fav-icon-container" onclick="toggleFavorite(${plant.id}, event)" title="Favoritar">
                             <i class="${favClass} fa-star fav-icon"></i>
                         </div>
@@ -577,8 +606,8 @@
                         <span class="tag-category">${plant.category}</span>
                         <h3 class="card-title">${plant.name}</h3>
                         <div class="info-section">
-                            <div class="info-title"><i class="fas fa-check-circle"></i> Principais Benefícios</div>
-                            <div class="info-text">${plant.benefits.substring(0, 50)}... <span style="color: var(--primary); font-weight: bold; font-size: 0.8rem;">(Ver mais)</span></div>
+                            <div class="info-title"><i class="fas fa-check-circle"></i> O que trata?</div>
+                            <div class="info-text">${plant.benefits.substring(0, 50)}... <span style="color: var(--primary); font-weight: bold; font-size: 0.8rem;">(Ver Detalhes e Vídeo)</span></div>
                         </div>
                     </div>
                 `;
@@ -586,30 +615,47 @@
             });
         }
 
-        /* Funções do Modal (Aba de informações completas) */
+        /* Funções do Modal (Aba de informações robustas e Vídeo) */
         function openModal(id) {
             const plant = plantsData.find(p => p.id === id);
             if (!plant) return;
 
+            const fallbackImage = `https://placehold.co/800x600/1b4332/d8f3dc?text=${encodeURIComponent(plant.name)}&font=montserrat`;
             const modalBody = document.getElementById('modalBody');
+            
             modalBody.innerHTML = `
-                <img src="${plant.img}" alt="${plant.name}" class="modal-header-img">
+                <img src="${plant.img}" alt="${plant.name}" class="modal-header-img" onerror="this.onerror=null; this.src='${fallbackImage}';">
                 <div class="modal-body-content">
                     <span class="tag-category">${plant.category}</span>
-                    <h2 class="card-title" style="font-size: 2rem;">${plant.name}</h2>
+                    <h2 class="card-title" style="font-size: 2.2rem;">${plant.name}</h2>
+                    
+                    <div class="modal-description">
+                        <i class="fas fa-info-circle" style="color: var(--primary); margin-right: 5px;"></i>
+                        <strong>Visão Fitoterápica:</strong> <br><br>
+                        ${plant.description}
+                    </div>
+
+                    <!-- VÍDEO DO YOUTUBE INTEGRADO -->
+                    <h3 style="margin-bottom: 15px; color: var(--primary-dark); font-size: 1.25rem;">
+                        <i class="fab fa-youtube" style="color: #ff0000;"></i> Tutorial: Como Preparar e Usar
+                    </h3>
+                    <div class="video-container">
+                        <!-- Usa o sistema de Embed Dinâmico do YouTube baseado em pesquisa -->
+                        <iframe src="https://www.youtube.com/embed?listType=search&list=${plant.videoQuery}" title="Vídeo sobre ${plant.name}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
                     
                     <div class="modal-info-section">
-                        <div class="modal-info-title"><i class="fas fa-check-circle"></i> Benefícios Completos</div>
+                        <div class="modal-info-title"><i class="fas fa-check-circle"></i> Benefícios Principais</div>
                         <div class="modal-info-text">${plant.benefits}</div>
                     </div>
                     
                     <div class="modal-info-section">
-                        <div class="modal-info-title"><i class="fas fa-mortar-pestle"></i> Método de Preparo Ideal</div>
+                        <div class="modal-info-title"><i class="fas fa-mortar-pestle"></i> Instruções de Preparo</div>
                         <div class="modal-info-text">${plant.prep}</div>
                     </div>
                     
                     <div class="modal-info-section">
-                        <div class="modal-info-title"><i class="fas fa-exclamation-triangle"></i> Contraindicações</div>
+                        <div class="modal-info-title"><i class="fas fa-exclamation-triangle"></i> Recomendações e Contraindicações</div>
                         <div class="modal-info-text">${plant.contra}</div>
                     </div>
 
@@ -618,7 +664,7 @@
                         <i class="fas fa-user-md"></i>
                         <div class="medical-alert-content">
                             <span class="medical-alert-title">Aviso de Especialista</span>
-                            <span class="medical-alert-text">As informações contidas neste guia têm caráter estritamente educativo. O uso de plantas medicinais não substitui o diagnóstico, acompanhamento ou tratamento prescrito por um médico ou fitoterapeuta qualificado. Sempre consulte um profissional de saúde antes de iniciar qualquer terapia natural.</span>
+                            <span class="medical-alert-text">As informações contidas neste guia da AyllaMed têm caráter estritamente educativo. O uso de plantas medicinais não substitui o diagnóstico, acompanhamento ou tratamento prescrito por um médico ou fitoterapeuta qualificado. Sempre consulte um profissional de saúde antes de iniciar qualquer terapia natural.</span>
                         </div>
                     </div>
                 </div>
@@ -626,21 +672,19 @@
             
             const modal = document.getElementById('plantModal');
             modal.style.display = 'flex';
-            // Pequeno delay para permitir que a transição CSS de opacidade funcione
             setTimeout(() => { modal.classList.add('show'); }, 10);
-            
-            // Impede rolagem do fundo
             document.body.style.overflow = 'hidden';
         }
 
         function closeModal(event) {
-            // Se o usuário clicou no fundo escuro ou no botão X
             if (event === undefined || event.target.id === 'plantModal' || event.target.classList.contains('close-modal')) {
                 const modal = document.getElementById('plantModal');
                 modal.classList.remove('show');
-                setTimeout(() => { modal.style.display = 'none'; }, 300); // Aguarda a animação
-                
-                // Restaura rolagem do fundo
+                // Para o vídeo do YouTube limpando o HTML interno antes de sumir
+                setTimeout(() => { 
+                    modal.style.display = 'none'; 
+                    document.getElementById('modalBody').innerHTML = '';
+                }, 300); 
                 document.body.style.overflow = 'auto';
             }
         }
@@ -664,7 +708,7 @@
         }
 
         function toggleFavorite(id, event) {
-            event.stopPropagation(); // Impede que o modal abra ao favoritar
+            event.stopPropagation();
             const index = favorites.indexOf(id);
             if (index > -1) {
                 favorites.splice(index, 1);
