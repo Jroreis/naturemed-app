@@ -8,10 +8,10 @@
     <style>
         :root {
             /* Paleta Premium Saúde Natural */
-            --primary: #1b4332; /* Verde floresta escuro */
+            --primary: #1b4332; 
             --primary-light: #2d6a4f;
             --primary-dark: #081c15;
-            --accent: #d8f3dc; /* Menta suave */
+            --accent: #d8f3dc; 
             --bg-color: #f8fbf8;
             --card-bg: #ffffff;
             --text-main: #2d3748;
@@ -208,6 +208,7 @@
             border: 1px solid rgba(0,0,0,0.03);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .plant-card:hover {
@@ -220,6 +221,26 @@
             height: 220px;
             position: relative;
             overflow: hidden;
+            cursor: pointer; /* Indica que é clicável */
+        }
+
+        /* Sobreposição de instrução na foto */
+        .card-img-container::after {
+            content: "Ver detalhes";
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card-img-container:hover::after {
+            opacity: 1;
         }
 
         .card-img {
@@ -235,7 +256,7 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -245,13 +266,14 @@
             cursor: pointer;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: var(--transition);
+            z-index: 2;
         }
 
         .fav-icon-container:hover { transform: scale(1.1); }
         .fav-icon { color: #cbd5e1; font-size: 1.2rem; }
         .fav-icon.active { color: #fbbf24; }
 
-        .card-body { padding: 25px; flex: 1; }
+        .card-body { padding: 25px; flex: 1; cursor: pointer; }
 
         .tag-category {
             display: inline-block;
@@ -273,25 +295,110 @@
             margin-bottom: 15px;
         }
 
-        .info-section { margin-bottom: 15px; }
+        /* MODAL (Aba de Detalhes) */
+        .modal {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-        .info-title {
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #1e293b;
+            background: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .close-modal:hover { background: #f1f5f9; color: #dc2626; }
+
+        .modal-header-img {
+            width: 100%; height: 250px; object-fit: cover;
+        }
+
+        .modal-body-content { padding: 30px; }
+
+        .modal-info-section { margin-bottom: 20px; }
+        .modal-info-title {
             font-weight: 700;
             color: var(--primary-light);
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 5px;
+            display: inline-flex;
+        }
+        .modal-info-text { font-size: 1.05rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* ALERTA MÉDICO PROFISSIONAL */
+        .medical-alert {
+            background: #fff5f5;
+            border-left: 5px solid #fc8181;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: flex; gap: 15px; align-items: flex-start;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
 
-        .info-text {
-            font-size: 0.95rem;
-            color: var(--text-muted);
+        .medical-alert i { color: #e53e3e; font-size: 1.8rem; margin-top: 2px; }
+        
+        .medical-alert-content { flex: 1; }
+        
+        .medical-alert-title { 
+            font-weight: 800; 
+            margin-bottom: 5px; 
+            display: block;
+            color: #9b2c2c;
+            font-size: 1.1rem;
+        }
+        
+        .medical-alert-text { 
+            font-size: 0.95rem; 
+            color: #c53030; 
             line-height: 1.5;
         }
 
-        /* Toast & Utils */
+        /* Toast / Notificações */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -305,7 +412,7 @@
             opacity: 0;
             visibility: hidden;
             transition: var(--transition);
-            z-index: 1000;
+            z-index: 2000;
             font-weight: 500;
         }
 
@@ -342,7 +449,7 @@
             .search-container { flex-direction: column; border-radius: 20px; padding: 15px; }
             .search-input { padding: 10px; }
             .search-btn { width: 100%; border-radius: 10px; }
-            .hero-section { border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+            .modal-content { width: 95%; }
         }
     </style>
 </head>
@@ -382,8 +489,19 @@
     <main>
         <h2 class="section-title" id="mainTitle">Catálogo Especializado</h2>
         <div class="plants-grid" id="plantsGrid">
-            </div>
+            <!-- Cards gerados via JS -->
+        </div>
     </main>
+
+    <!-- Modal (Aba de Detalhes) -->
+    <div id="plantModal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalBody">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+        </div>
+    </div>
 
     <div class="toast" id="toast">Ação realizada com sucesso!</div>
 
@@ -392,28 +510,28 @@
     </footer>
 
     <script>
-        // Banco de dados mantido intacto. Inserido apenas o campo 'img' com fotos profissionais em alta resolução.
+        // Banco de dados com URLs de imagens robustas e altamente confiáveis
         const plantsData = [
-            { id: 1, name: "Hortelã", img: "https://images.unsplash.com/photo-1628557044797-f21a177c37ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Digestivo", benefits: "Alívio de náuseas, má digestão e gases.", prep: "Infusão: 1 colher de folhas para 1 xícara de água quente. Abafe por 5 min.", contra: "Pessoas com refluxo grave ou pedras na vesícula." },
-            { id: 2, name: "Camomila", img: "https://images.unsplash.com/photo-1608833983287-c2ce3851cb74?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Relaxante", benefits: "Ajuda no sono, reduz ansiedade e cólicas.", prep: "Infusão das flores secas. 1 colher de sopa por xícara.", contra: "Alérgicos a plantas da família Asteraceae." },
-            { id: 3, name: "Erva-cidreira", img: "https://images.unsplash.com/photo-1596489375783-16a13d789e90?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Relaxante", benefits: "Calmante leve, melhora a qualidade do sono e alivia gases.", prep: "Infusão das folhas. Tomar 30 min antes de dormir.", contra: "Pessoas com hipotireoidismo (uso excessivo)." },
-            { id: 4, name: "Gengibre", img: "https://images.unsplash.com/photo-1615486171430-8dbec4344cb8?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Imunidade", benefits: "Anti-inflamatório, fortalece imunidade, alivia enjoos.", prep: "Decocção: ferver 1 rodela fina em 1 xícara de água por 10 min.", contra: "Pessoas com hipertensão descontrolada ou que usam anticoagulantes." },
-            { id: 5, name: "Alho", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Imunidade", benefits: "Antibiótico natural, reduz pressão arterial e colesterol.", prep: "Consumir cru, amassado (água de alho) ou em xaropes.", contra: "Antes de cirurgias (risco de sangramento) e gastrite severa." },
-            { id: 6, name: "Equinácea", img: "https://images.unsplash.com/photo-1598463581729-231a477d94de?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Imunidade", benefits: "Prevenção e tratamento de gripes e resfriados.", prep: "Chá das raízes/folhas ou uso em tintura.", contra: "Doenças autoimunes ou esclerose múltipla." },
-            { id: 7, name: "Boldo", img: "https://images.unsplash.com/photo-1515589656410-b960b73c41ea?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Digestivo", benefits: "Protetor hepático, alivia azia e ressaca.", prep: "Maceração a frio ou infusão das folhas.", contra: "Gestantes, lactantes e pessoas com vias biliares obstruídas." },
-            { id: 8, name: "Alecrim", img: "https://images.unsplash.com/photo-1595200388279-9f5b61b32bb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Estimulante", benefits: "Melhora foco, memória e alivia cansaço mental.", prep: "Infusão de 1 ramo pequeno por xícara.", contra: "Uso noturno (pode causar insônia), hipertensos (uso excessivo)." },
-            { id: 9, name: "Lavanda", img: "https://images.unsplash.com/photo-1498612753354-772a30629934?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Relaxante", benefits: "Alivia dores de cabeça, estresse e insônia.", prep: "Chá das flores ou uso de óleo essencial (aromaterapia).", contra: "Gestantes no primeiro trimestre." },
-            { id: 10, name: "Arnica", img: "https://images.unsplash.com/photo-1554522914-722c1ec3655b?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Pele/Uso Externo", benefits: "Reduz hematomas, dores musculares e contusões.", prep: "Uso externo: pomadas, géis ou compressas.", contra: "Nunca ingerir (tóxica). Não aplicar em feridas abertas." },
-            { id: 11, name: "Babosa (Aloe Vera)", img: "https://images.unsplash.com/photo-1596547610052-a81d4dd886b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Pele/Uso Externo", benefits: "Cicatrização, queimaduras e hidratação de pele/cabelo.", prep: "Extrair o gel transparente da folha e aplicar na pele.", contra: "Uso interno não recomendado sem orientação. Alergia tópica." },
-            { id: 12, name: "Calêndula", img: "https://images.unsplash.com/photo-1506041079361-b1e959ce7eb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Pele/Uso Externo", benefits: "Anti-inflamatório para pele, trata acne e assaduras.", prep: "Compressas com o chá das flores ou uso em pomadas.", contra: "Alérgicos a plantas da família Asteraceae." },
-            { id: 13, name: "Guaraná", img: "https://images.unsplash.com/photo-1596048109678-2cf2bdf87f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Estimulante", benefits: "Aumenta energia, disposição e reduz fadiga.", prep: "Pó dissolvido em água ou sucos pela manhã.", contra: "Insônia, ansiedade, arritmias cardíacas." },
-            { id: 14, name: "Erva-doce", img: "https://images.unsplash.com/photo-1598802958223-958b14e8ba4d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Digestivo", benefits: "Alivia cólicas infantis e intestinais, reduz inchaço.", prep: "Infusão das sementes (1 colher de chá por xícara).", contra: "Gestantes em altas doses." },
-            { id: 15, name: "Eucalipto", img: "https://images.unsplash.com/photo-1551069613-2d21da633006?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Respiratório", benefits: "Expectorante, descongestionante nasal.", prep: "Inalação do vapor com folhas em água quente.", contra: "Asmáticos crônicos (pode desencadear crise), crianças pequenas." },
-            { id: 16, name: "Guaco", img: "https://images.unsplash.com/photo-1533038590840-1cbea6d6d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Respiratório", benefits: "Alivia tosse persistente e bronquite (broncodilatador).", prep: "Xarope ou infusão das folhas.", contra: "Pessoas que usam anticoagulantes." },
-            { id: 17, name: "Macela", img: "https://images.unsplash.com/photo-1628186411520-23955ab3f345?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Digestivo", benefits: "Má digestão, diarreia e propriedades calmantes.", prep: "Infusão das flores secas.", contra: "Não há contraindicações graves conhecidas nas doses normais." },
-            { id: 18, name: "Sálvia", img: "https://images.unsplash.com/photo-1606555198084-2a62174d39c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Respiratório", benefits: "Alivia dor de garganta, aftas e problemas gengivais.", prep: "Gargarejo com o chá forte das folhas.", contra: "Gestantes e lactantes (pode secar o leite)." },
-            { id: 19, name: "Quebra-pedra", img: "https://images.unsplash.com/photo-1611077873636-6e494a37b120?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Sistema Urinário", benefits: "Auxilia na eliminação de cálculos renais e infecção urinária.", prep: "Decocção da planta inteira por 5 a 10 minutos.", contra: "Gestantes e uso prolongado (mais de 3 semanas seguidas)." },
-            { id: 20, name: "Valeriana", img: "https://images.unsplash.com/photo-1506806732259-39c2d0268443?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80", category: "Relaxante", benefits: "Trata insônia profunda e crises de ansiedade.", prep: "Chá da raiz ou em cápsulas (tomar 1h antes de dormir).", contra: "Crianças menores de 3 anos, uso associado a álcool." }
+            { id: 1, name: "Hortelã", img: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Alívio de náuseas, má digestão e gases.", prep: "Infusão: 1 colher de folhas para 1 xícara de água quente. Abafe por 5 min.", contra: "Pessoas com refluxo grave ou pedras na vesícula." },
+            { id: 2, name: "Camomila", img: "https://images.unsplash.com/photo-1597848212624-a19eb35e2651?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Ajuda no sono, reduz ansiedade e cólicas.", prep: "Infusão das flores secas. 1 colher de sopa por xícara.", contra: "Alérgicos a plantas da família Asteraceae." },
+            { id: 3, name: "Erva-cidreira", img: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Calmante leve, melhora a qualidade do sono e alivia gases.", prep: "Infusão das folhas. Tomar 30 min antes de dormir.", contra: "Pessoas com hipotireoidismo (uso excessivo)." },
+            { id: 4, name: "Gengibre", img: "https://images.unsplash.com/photo-1596368708356-6e1efb2401c8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Anti-inflamatório, fortalece imunidade, alivia enjoos.", prep: "Decocção: ferver 1 rodela fina em 1 xícara de água por 10 min.", contra: "Pessoas com hipertensão descontrolada ou que usam anticoagulantes." },
+            { id: 5, name: "Alho", img: "https://images.unsplash.com/photo-1540148426946-88d0111568e6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Antibiótico natural, reduz pressão arterial e colesterol.", prep: "Consumir cru, amassado (água de alho) ou em xaropes.", contra: "Antes de cirurgias (risco de sangramento) e gastrite severa." },
+            { id: 6, name: "Equinácea", img: "https://images.unsplash.com/photo-1601614457814-25624707dc87?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Imunidade", benefits: "Prevenção e tratamento de gripes e resfriados.", prep: "Chá das raízes/folhas ou uso em tintura.", contra: "Doenças autoimunes ou esclerose múltipla." },
+            { id: 7, name: "Boldo", img: "https://images.unsplash.com/photo-1628157732272-2c8c7c8ec1eb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Protetor hepático, alivia azia e ressaca.", prep: "Maceração a frio ou infusão das folhas.", contra: "Gestantes, lactantes e pessoas com vias biliares obstruídas." },
+            { id: 8, name: "Alecrim", img: "https://images.unsplash.com/photo-1596366629910-39fb74291079?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Estimulante", benefits: "Melhora foco, memória e alivia cansaço mental.", prep: "Infusão de 1 ramo pequeno por xícara.", contra: "Uso noturno (pode causar insônia), hipertensos (uso excessivo)." },
+            { id: 9, name: "Lavanda", img: "https://images.unsplash.com/photo-1595806450143-6c703d8d6411?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Alivia dores de cabeça, estresse e insônia.", prep: "Chá das flores ou uso de óleo essencial (aromaterapia).", contra: "Gestantes no primeiro trimestre." },
+            { id: 10, name: "Arnica", img: "https://images.unsplash.com/photo-1554522914-722c1ec3655b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Reduz hematomas, dores musculares e contusões.", prep: "Uso externo: pomadas, géis ou compressas.", contra: "Nunca ingerir (tóxica). Não aplicar em feridas abertas." },
+            { id: 11, name: "Babosa (Aloe Vera)", img: "https://images.unsplash.com/photo-1556012018-50c5c0da73bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Cicatrização, queimaduras e hidratação de pele/cabelo.", prep: "Extrair o gel transparente da folha e aplicar na pele.", contra: "Uso interno não recomendado sem orientação. Alergia tópica." },
+            { id: 12, name: "Calêndula", img: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Pele/Uso Externo", benefits: "Anti-inflamatório para pele, trata acne e assaduras.", prep: "Compressas com o chá das flores ou uso em pomadas.", contra: "Alérgicos a plantas da família Asteraceae." },
+            { id: 13, name: "Guaraná", img: "https://images.unsplash.com/photo-1587314418659-40eb25c2759e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Estimulante", benefits: "Aumenta energia, disposição e reduz fadiga.", prep: "Pó dissolvido em água ou sucos pela manhã.", contra: "Insônia, ansiedade, arritmias cardíacas." },
+            { id: 14, name: "Erva-doce", img: "https://images.unsplash.com/photo-1606277983173-9ea75bb423e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Alivia cólicas infantis e intestinais, reduz inchaço.", prep: "Infusão das sementes (1 colher de chá por xícara).", contra: "Gestantes em altas doses." },
+            { id: 15, name: "Eucalipto", img: "https://images.unsplash.com/photo-1620050865518-d014d872120e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Expectorante, descongestionante nasal.", prep: "Inalação do vapor com folhas em água quente.", contra: "Asmáticos crônicos (pode desencadear crise), crianças pequenas." },
+            { id: 16, name: "Guaco", img: "https://images.unsplash.com/photo-1595181792671-55ecbbec0e97?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Alivia tosse persistente e bronquite (broncodilatador).", prep: "Xarope ou infusão das folhas.", contra: "Pessoas que usam anticoagulantes." },
+            { id: 17, name: "Macela", img: "https://images.unsplash.com/photo-1616853239401-0814daee83fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Digestivo", benefits: "Má digestão, diarreia e propriedades calmantes.", prep: "Infusão das flores secas.", contra: "Não há contraindicações graves conhecidas nas doses normais." },
+            { id: 18, name: "Sálvia", img: "https://images.unsplash.com/photo-1603504388137-b4d0e14a1a6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Respiratório", benefits: "Alivia dor de garganta, aftas e problemas gengivais.", prep: "Gargarejo com o chá forte das folhas.", contra: "Gestantes e lactantes (pode secar o leite)." },
+            { id: 19, name: "Quebra-pedra", img: "https://images.unsplash.com/photo-1579970977232-a5e22ea25df6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Sistema Urinário", benefits: "Auxilia na eliminação de cálculos renais e infecção urinária.", prep: "Decocção da planta inteira por 5 a 10 minutos.", contra: "Gestantes e uso prolongado (mais de 3 semanas seguidas)." },
+            { id: 20, name: "Valeriana", img: "https://images.unsplash.com/photo-1595420364998-1da5faae6ce5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", category: "Relaxante", benefits: "Trata insônia profunda e crises de ansiedade.", prep: "Chá da raiz ou em cápsulas (tomar 1h antes de dormir).", contra: "Crianças menores de 3 anos, uso associado a álcool." }
         ];
 
         let currentCategory = 'Todos';
@@ -447,35 +565,84 @@
                 
                 const card = document.createElement('div');
                 card.className = 'plant-card';
+                // Adiciona o evento de clique em todo o card para abrir o modal
                 card.innerHTML = `
-                    <div class="card-img-container">
-                        <img src="${plant.img}" alt="${plant.name}" class="card-img">
+                    <div class="card-img-container" onclick="openModal(${plant.id})">
+                        <img src="${plant.img}" alt="${plant.name}" class="card-img" loading="lazy">
                         <div class="fav-icon-container" onclick="toggleFavorite(${plant.id}, event)" title="Favoritar">
                             <i class="${favClass} fa-star fav-icon"></i>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" onclick="openModal(${plant.id})">
                         <span class="tag-category">${plant.category}</span>
                         <h3 class="card-title">${plant.name}</h3>
-                        
                         <div class="info-section">
                             <div class="info-title"><i class="fas fa-check-circle"></i> Principais Benefícios</div>
-                            <div class="info-text">${plant.benefits}</div>
-                        </div>
-                        
-                        <div class="info-section">
-                            <div class="info-title"><i class="fas fa-mortar-pestle"></i> Preparo Ideal</div>
-                            <div class="info-text">${plant.prep}</div>
-                        </div>
-                        
-                        <div class="info-section" style="margin-bottom: 0;">
-                            <div class="info-title"><i class="fas fa-exclamation-triangle"></i> Recomendações e Atenção</div>
-                            <div class="info-text">${plant.contra}</div>
+                            <div class="info-text">${plant.benefits.substring(0, 50)}... <span style="color: var(--primary); font-weight: bold; font-size: 0.8rem;">(Ver mais)</span></div>
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        /* Funções do Modal (Aba de informações completas) */
+        function openModal(id) {
+            const plant = plantsData.find(p => p.id === id);
+            if (!plant) return;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <img src="${plant.img}" alt="${plant.name}" class="modal-header-img">
+                <div class="modal-body-content">
+                    <span class="tag-category">${plant.category}</span>
+                    <h2 class="card-title" style="font-size: 2rem;">${plant.name}</h2>
+                    
+                    <div class="modal-info-section">
+                        <div class="modal-info-title"><i class="fas fa-check-circle"></i> Benefícios Completos</div>
+                        <div class="modal-info-text">${plant.benefits}</div>
+                    </div>
+                    
+                    <div class="modal-info-section">
+                        <div class="modal-info-title"><i class="fas fa-mortar-pestle"></i> Método de Preparo Ideal</div>
+                        <div class="modal-info-text">${plant.prep}</div>
+                    </div>
+                    
+                    <div class="modal-info-section">
+                        <div class="modal-info-title"><i class="fas fa-exclamation-triangle"></i> Contraindicações</div>
+                        <div class="modal-info-text">${plant.contra}</div>
+                    </div>
+
+                    <!-- Alerta Médico Embutido -->
+                    <div class="medical-alert">
+                        <i class="fas fa-user-md"></i>
+                        <div class="medical-alert-content">
+                            <span class="medical-alert-title">Aviso de Especialista</span>
+                            <span class="medical-alert-text">As informações contidas neste guia têm caráter estritamente educativo. O uso de plantas medicinais não substitui o diagnóstico, acompanhamento ou tratamento prescrito por um médico ou fitoterapeuta qualificado. Sempre consulte um profissional de saúde antes de iniciar qualquer terapia natural.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.getElementById('plantModal');
+            modal.style.display = 'flex';
+            // Pequeno delay para permitir que a transição CSS de opacidade funcione
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+            
+            // Impede rolagem do fundo
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            // Se o usuário clicou no fundo escuro ou no botão X
+            if (event === undefined || event.target.id === 'plantModal' || event.target.classList.contains('close-modal')) {
+                const modal = document.getElementById('plantModal');
+                modal.classList.remove('show');
+                setTimeout(() => { modal.style.display = 'none'; }, 300); // Aguarda a animação
+                
+                // Restaura rolagem do fundo
+                document.body.style.overflow = 'auto';
+            }
         }
 
         function filterPlants() { renderPlants(); }
@@ -497,7 +664,7 @@
         }
 
         function toggleFavorite(id, event) {
-            event.stopPropagation();
+            event.stopPropagation(); // Impede que o modal abra ao favoritar
             const index = favorites.indexOf(id);
             if (index > -1) {
                 favorites.splice(index, 1);
